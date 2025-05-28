@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISS Research Hub - Projetos Científicos Internacionais</title>
+    <meta name="description" content="Plataforma internacional avançada de pesquisa espacial com analytics, filtros inteligentes e gerenciamento completo de projetos">
+    
+    <!-- External Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Space Theme Colors */
+            --background: 210 24% 7%; /* #0a0f1e */
+            --foreground: 225 71% 92%; /* #e0e6ff */
+            
+            --space-blue: 219 39% 20%; /* #1e2746 */
+            --space-slate: 219 42% 18%; /* #1c2541 */
+            --cosmic-blue: 207 90% 54%; /* #3498db */
+            
+            --status-intact: 142 71% 45%; /* #2ecc71 */
+            --status-damaged: 0 74% 42%; /* #e74c3c */
+            
+            --primary: 207 90% 54%;
+            --primary-foreground: 211 100% 99%;
+            --muted-foreground: 225 25% 65%;
+            --border: 225 25% 25%;
+            --card: 210 24% 7%;
+            --radius: 0.75rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism effects */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius);
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, hsl(var(--primary)), #3b82f6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .logo-text p {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 320px;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .search-input::placeholder {
+            color: hsl(var(--muted-foreground));
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: hsl(var(--muted-foreground));
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-primary {
+            background: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+        }
+
+        .btn-primary:hover {
+            background: hsl(var(--primary) / 0.9);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-info h3 {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-info p {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Project Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .project-image {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .gradient-blue { background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%); }
+        .gradient-green { background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%); }
+        .gradient-cyan { background: linear-gradient(135deg, rgba(6, 182, 212, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%); }
+        .gradient-orange { background: linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(239, 68, 68, 0.3) 100%); }
+        .gradient-purple { background: linear-gradient(135deg, rgba(147, 51, 234, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%); }
+        .gradient-yellow { background: linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(249, 115, 22, 0.3) 100%); }
+        .gradient-indigo { background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%); }
+        .gradient-teal { background: linear-gradient(135deg, rgba(20, 184, 166, 0.3) 0%, rgba(6, 182, 212, 0.3) 100%); }
+
+        .status-badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .country-flag {
+            position: absolute;
+            top: 0.75rem;
+            left: 4rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 4px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        .country-flag-large {
+            width: 60px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 1rem 0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-intact { background: hsl(var(--status-intact)); }
+        .status-damaged { background: hsl(var(--status-damaged)); }
+
+        .project-info {
+            padding: 1.5rem;
+        }
+
+        .project-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-description {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .priority-critical { color: #ef4444; }
+        .priority-alta { color: #eab308; }
+        .priority-media { color: #3b82f6; }
+        .priority-baixa { color: #22c55e; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-intact {
+            background: linear-gradient(90deg, hsl(var(--status-intact)), #10b981);
+        }
+
+        .progress-damaged {
+            background: linear-gradient(90deg, hsl(var(--status-damaged)), #f87171);
+        }
+
+        .progress-partial {
+            background: linear-gradient(90deg, #eab308, #f59e0b);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button.active {
+            background: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+        }
+
+        /* Filter Sidebar */
+        .filter-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 380px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 60;
+            overflow-y: auto;
+        }
+
+        .filter-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .filter-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .filter-backdrop.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .filter-content {
+            padding: 2rem;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .filter-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .filter-section label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .filter-input::placeholder {
+            color: hsl(var(--muted-foreground));
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .radio-item input[type="radio"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .sort-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .sort-option {
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .sort-option.active {
+            background: hsl(var(--primary));
+            border-color: hsl(var(--primary));
+        }
+
+        .sort-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Enhanced country styles */
+        .country-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .country-display .flag {
+            font-size: 1rem;
+        }
+
+        /* Progress circle */
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .progress-complete {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .progress-partial {
+            background: linear-gradient(135deg, #eab308, #d97706);
+            color: white;
+        }
+
+        .progress-low {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        /* Task checkbox styling */
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-top: 0.125rem;
+            accent-color: #22c55e;
+        }
+
+        .task-content {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .task-completed {
+            text-decoration: line-through;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .add-task-btn {
+            color: #22c55e;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(34, 197, 94, 0.05);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .add-task-btn:hover {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        /* Task input form */
+        .task-form {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .task-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .task-input::placeholder {
+            color: hsl(var(--muted-foreground));
+        }
+
+        .task-form-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: hsl(var(--muted-foreground));
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Progress update animation */
+        .progress-updating {
+            animation: progressPulse 0.5s ease-in-out;
+        }
+
+        @keyframes progressPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .filter-sidebar {
+                width: 100%;
+            }
+
+            .sort-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading States */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Utilities */
+        .hidden { display: none; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .text-sm { font-size: 0.875rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-center { text-align: center; }
+        .w-full { width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Enhanced data with persistent task management
+        const PROJECTS_DATA = [
+            {
+                id: 1,
+                title: "Materiais resistentes à radiação espacial",
+                description: "Este experimento tem como objetivo analisar os efeitos da microgravidade na densidade da musculatura dos astronautas que ficaram por longos períodos a bordo da ISS. A pesquisa visa entender como a falta de gravidade afeta o corpo humano e quais são as consequências a longo prazo.",
+                status: "INTACTO",
+                priority: "ALTA",
+                category: "Materiais",
+                baseProgress: 85,
+                icon: "fas fa-atom",
+                gradient: "gradient-blue",
+                lead: "Dr. Carlos Santos",
+                country: "Brasil",
+                countryFlag: "🇧🇷",
+                startDate: "2024-03-15",
+                endDate: "2024-06-30",
+                testsCompleted: 156,
+                successRate: 98,
+                materialsCount: 24,
+                researchersCount: 5,
+                initialTasks: [
+                    "Analisar o dano ao experimento e determinar o que precisa ser reparado",
+                    "Identificar as peças que precisam ser reparadas ou substituídas", 
+                    "Remover as peças identificadas com cuidado para não prejudicar ainda mais o experimento"
+                ],
+                pendingTasks: [
+                    "Executar reparos estruturais com equipamentos especializados",
+                    "Realizar testes de funcionalidade e calibração de sistemas",
+                    "Documentar resultados finais e preparar relatório técnico"
+                ]
+            },
+            {
+                id: 2,
+                title: "Plantas em Microgravidade",
+                description: "Estudo detalhado do crescimento vegetal em ambiente espacial para desenvolvimento de sistemas de suporte à vida em missões de longa duração.",
+                status: "INTACTO",
+                priority: "ALTA",
+                category: "Biologia",
+                baseProgress: 92,
+                icon: "fas fa-seedling",
+                gradient: "gradient-green",
+                lead: "Dra. Maria Silva",
+                country: "Brasil",
+                countryFlag: "🇧🇷",
+                startDate: "2024-02-01",
+                endDate: "2024-08-15",
+                testsCompleted: 89,
+                successRate: 94,
+                materialsCount: 12,
+                researchersCount: 7,
+                initialTasks: [
+                    "Preparar sementes especiais para ambiente espacial",
+                    "Configurar sistema de irrigação em microgravidade",
+                    "Instalar sensores de crescimento automatizados"
+                ],
+                pendingTasks: [
+                    "Monitorar crescimento durante 30 dias",
+                    "Coletar dados sobre desenvolvimento radicular",
+                    "Analisar diferenças com plantas terrestres"
+                ]
+            },
+            {
+                id: 3,
+                title: "Sistema de reciclagem de ar",
+                description: "Sistema avançado de purificação atmosférica para missões espaciais de longa duração com tecnologia de filtragem inovadora.",
+                status: "DANIFICADO",
+                priority: "CRÍTICA",
+                category: "Sistemas",
+                baseProgress: 30,
+                icon: "fas fa-recycle",
+                gradient: "gradient-cyan",
+                lead: "Dr. João Oliveira",
+                country: "Estados Unidos",
+                countryFlag: "🇺🇸",
+                startDate: "2024-01-10",
+                endDate: "2024-07-20",
+                testsCompleted: 34,
+                successRate: 67,
+                materialsCount: 8,
+                researchersCount: 4,
+                initialTasks: [
+                    "Diagnosticar falha no sistema de filtragem principal"
+                ],
+                pendingTasks: [
+                    "Substituir filtros danificados por radiação",
+                    "Recalibrar sensores de qualidade do ar",
+                    "Testar sistema com cargas máximas",
+                    "Implementar backup de emergência",
+                    "Validar funcionamento por 72 horas contínuas"
+                ]
+            },
+            {
+                id: 4,
+                title: "Traje espacial de nova geração",
+                description: "Desenvolvimento de equipamentos de proteção individual avançados para atividades extraveiculares com maior mobilidade.",
+                status: "INTACTO",
+                priority: "MÉDIA",
+                category: "Equipamentos",
+                baseProgress: 88,
+                icon: "fas fa-user-astronaut",
+                gradient: "gradient-orange",
+                lead: "Dra. Ana Costa",
+                country: "Rússia",
+                countryFlag: "🇷🇺",
+                startDate: "2024-02-20",
+                endDate: "2024-09-10",
+                testsCompleted: 78,
+                successRate: 91,
+                materialsCount: 15,
+                researchersCount: 6,
+                initialTasks: [
+                    "Testar resistência dos materiais do traje",
+                    "Validar sistema de comunicação integrado",
+                    "Verificar mobilidade das articulações"
+                ],
+                pendingTasks: [
+                    "Realizar teste de pressurização final",
+                    "Documentar procedimentos de uso",
+                    "Treinar astronautas no novo equipamento"
+                ]
+            },
+            {
+                id: 5,
+                title: "Propulsão iônica eficiente",
+                description: "Motor de propulsão iônica de alta eficiência para viagens espaciais de longa distância com consumo reduzido de combustível.",
+                status: "DANIFICADO",
+                priority: "MÉDIA",
+                category: "Propulsão",
+                baseProgress: 25,
+                icon: "fas fa-rocket",
+                gradient: "gradient-orange",
+                lead: "Dr. Felipe Araujo",
+                country: "Japão",
+                countryFlag: "🇯🇵",
+                startDate: "2024-02-15",
+                endDate: "2024-09-30",
+                testsCompleted: 29,
+                successRate: 74,
+                materialsCount: 13,
+                researchersCount: 5,
+                initialTasks: [
+                    "Identificar causa da falha no sistema de íons"
+                ],
+                pendingTasks: [
+                    "Substituir grade de aceleração danificada",
+                    "Recalibrar campo magnético do propulsor",
+                    "Testar eficiência com diferentes combustíveis",
+                    "Otimizar consumo energético",
+                    "Validar funcionamento em vácuo simulado",
+                    "Preparar para teste orbital"
+                ]
+            },
+            {
+                id: 6,
+                title: "Comunicação quântica espacial",
+                description: "Sistema de comunicação instantânea baseado em entrelaçamento quântico para missões interplanetárias de longa duração.",
+                status: "INTACTO",
+                priority: "ALTA",
+                category: "Comunicações",
+                baseProgress: 95,
+                icon: "fas fa-satellite-dish",
+                gradient: "gradient-purple",
+                lead: "Dra. Lucia Rocha",
+                country: "China",
+                countryFlag: "🇨🇳",
+                startDate: "2024-03-20",
+                endDate: "2024-12-15",
+                testsCompleted: 67,
+                successRate: 87,
+                materialsCount: 11,
+                researchersCount: 6,
+                initialTasks: [
+                    "Calibrar sistema de entrelaçamento quântico",
+                    "Testar comunicação Terra-Lua",
+                    "Validar criptografia quântica",
+                    "Otimizar velocidade de transmissão"
+                ],
+                pendingTasks: [
+                    "Realizar teste final de longa distância",
+                    "Documentar protocolos de operação"
+                ]
+            },
+            {
+                id: 7,
+                title: "Robótica de reparo orbital",
+                description: "Manipulador robótico autônomo de precisão para manutenção e reparos em estações espaciais sem intervenção humana.",
+                status: "INTACTO",
+                priority: "MÉDIA",
+                category: "Robótica",
+                baseProgress: 82,
+                icon: "fas fa-robot",
+                gradient: "gradient-indigo",
+                lead: "Dr. Ricardo Santos",
+                country: "Canadá",
+                countryFlag: "🇨🇦",
+                startDate: "2024-02-10",
+                endDate: "2024-08-20",
+                testsCompleted: 112,
+                successRate: 96,
+                materialsCount: 21,
+                researchersCount: 9,
+                initialTasks: [
+                    "Programar algoritmos de reconhecimento visual",
+                    "Testar precisão de movimentos milimétricos",
+                    "Validar sistema de segurança anti-colisão"
+                ],
+                pendingTasks: [
+                    "Realizar simulação de reparo complexo",
+                    "Testar operação remota da Terra",
+                    "Finalizar certificação de segurança",
+                    "Treinar operadores terrestres"
+                ]
+            },
+            {
+                id: 8,
+                title: "Habitat lunar inflável",
+                description: "Módulos habitacionais expansíveis e infláveis para estabelecimento de bases permanentes na superfície lunar.",
+                status: "INTACTO",
+                priority: "CRÍTICA",
+                category: "Estruturas",
+                baseProgress: 91,
+                icon: "fas fa-home",
+                gradient: "gradient-teal",
+                lead: "Dr. Marcos Ferreira",
+                country: "França",
+                countryFlag: "🇫🇷",
+                startDate: "2024-01-05",
+                endDate: "2024-05-30",
+                testsCompleted: 87,
+                successRate: 99,
+                materialsCount: 6,
+                researchersCount: 4,
+                initialTasks: [
+                    "Testar resistência do material inflável",
+                    "Validar sistema de pressurização automática",
+                    "Verificar isolamento térmico",
+                    "Testar ancoragem no solo lunar simulado"
+                ],
+                pendingTasks: [
+                    "Realizar teste final de habitabilidade",
+                    "Validar sistemas de suporte à vida",
+                    "Documentar procedimentos de montagem"
+                ]
+            },
+            {
+                id: 9,
+                title: "Sistemas de navegação por satélite",
+                description: "GPS espacial de alta precisão para navegação interplanetária autônoma com correção de trajetória em tempo real.",
+                status: "DANIFICADO",
+                priority: "ALTA",
+                category: "Navegação",
+                baseProgress: 20,
+                icon: "fas fa-compass",
+                gradient: "gradient-blue",
+                lead: "Dra. Patricia Lopes",
+                country: "Alemanha",
+                countryFlag: "🇩🇪",
+                startDate: "2024-02-05",
+                endDate: "2024-08-30",
+                testsCompleted: 43,
+                successRate: 81,
+                materialsCount: 14,
+                researchersCount: 6,
+                initialTasks: [],
+                pendingTasks: [
+                    "Reparar antena de comunicação com satélites",
+                    "Recalibrar algoritmos de triangulação",
+                    "Testar precisão em diferentes órbitas",
+                    "Implementar correção de deriva temporal",
+                    "Validar navegação autônoma",
+                    "Integrar com sistemas de propulsão",
+                    "Certificar para missões interplanetárias"
+                ]
+            },
+            {
+                id: 10,
+                title: "Extração de água de asteroides",
+                description: "Sistema automatizado de extração e purificação de água a partir de gelo presente em asteroides próximos à Terra.",
+                status: "INTACTO",
+                priority: "MÉDIA",
+                category: "Recursos",
+                baseProgress: 89,
+                icon: "fas fa-tint",
+                gradient: "gradient-cyan",
+                lead: "Dr. Andre Moura",
+                country: "Austrália",
+                countryFlag: "🇦🇺",
+                startDate: "2024-03-05",
+                endDate: "2024-10-10",
+                testsCompleted: 72,
+                successRate: 88,
+                materialsCount: 16,
+                researchersCount: 5,
+                initialTasks: [
+                    "Testar perfuração em gelo simulado",
+                    "Validar sistema de purificação",
+                    "Otimizar eficiência energética"
+                ],
+                pendingTasks: [
+                    "Realizar teste com material real de asteroide",
+                    "Certificar qualidade da água extraída",
+                    "Documentar procedimentos operacionais"
+                ]
+            },
+            {
+                id: 11,
+                title: "Laboratório científico automatizado",
+                description: "Laboratório robótico completamente automatizado para experimentos em microgravidade sem necessidade de supervisão humana.",
+                status: "INTACTO",
+                priority: "ALTA",
+                category: "Laboratórios",
+                baseProgress: 87,
+                icon: "fas fa-flask",
+                gradient: "gradient-teal",
+                lead: "Dra. Camila Nunes",
+                country: "Reino Unido",
+                countryFlag: "🇬🇧",
+                startDate: "2024-03-10",
+                endDate: "2024-11-20",
+                testsCompleted: 95,
+                successRate: 92,
+                materialsCount: 27,
+                researchersCount: 10,
+                initialTasks: [
+                    "Programar protocolos de experimentos automatizados",
+                    "Testar manipulação robótica de amostras",
+                    "Validar sistema de análise química"
+                ],
+                pendingTasks: [
+                    "Realizar bateria completa de testes",
+                    "Integrar com banco de dados terrestre",
+                    "Certificar procedimentos de segurança",
+                    "Treinar operadores remotos"
+                ]
+            },
+            {
+                id: 12,
+                title: "Proteção térmica avançada",
+                description: "Sistema de proteção térmica de última geração para reentrada atmosférica segura de veículos espaciais reutilizáveis.",
+                status: "INTACTO",
+                priority: "CRÍTICA",
+                category: "Proteção",
+                baseProgress: 94,
+                icon: "fas fa-shield-alt",
+                gradient: "gradient-yellow",
+                lead: "Dr. Roberto Silva",
+                country: "Coreia do Sul",
+                countryFlag: "🇰🇷",
+                startDate: "2024-01-20",
+                endDate: "2024-06-15",
+                testsCompleted: 134,
+                successRate: 95,
+                materialsCount: 19,
+                researchersCount: 7,
+                initialTasks: [
+                    "Testar resistência a temperaturas extremas",
+                    "Validar durabilidade após múltiplas reentradas",
+                    "Verificar integridade estrutural",
+                    "Otimizar distribuição de calor"
+                ],
+                pendingTasks: [
+                    "Realizar teste final de reentrada simulada",
+                    "Certificar para uso em missões tripuladas"
+                ]
+            },
+            {
+                id: 13,
+                title: "Manufatura em microgravidade",
+                description: "Sistema de manufatura espacial para produção de materiais únicos impossíveis de criar na Terra devido à gravidade.",
+                status: "INTACTO",
+                priority: "BAIXA",
+                category: "Manufatura",
+                baseProgress: 78,
+                icon: "fas fa-industry",
+                gradient: "gradient-indigo",
+                lead: "Dra. Beatriz Costa",
+                country: "Itália",
+                countryFlag: "🇮🇹",
+                startDate: "2024-02-25",
+                endDate: "2024-11-30",
+                testsCompleted: 58,
+                successRate: 90,
+                materialsCount: 22,
+                researchersCount: 8,
+                initialTasks: [
+                    "Configurar impressora 3D para microgravidade",
+                    "Testar diferentes materiais de impressão",
+                    "Validar qualidade dos produtos"
+                ],
+                pendingTasks: [
+                    "Otimizar velocidade de produção",
+                    "Testar manufatura de componentes críticos",
+                    "Implementar controle de qualidade automatizado",
+                    "Documentar processos padronizados",
+                    "Treinar operadores especialistas"
+                ]
+            },
+            {
+                id: 14,
+                title: "Sensores de radiação cósmica",
+                description: "Array de sensores de alta sensibilidade para detecção e análise de radiação cósmica e partículas energéticas.",
+                status: "DANIFICADO",
+                priority: "MÉDIA",
+                category: "Sensores",
+                baseProgress: 15,
+                icon: "fas fa-radar-alt",
+                gradient: "gradient-purple",
+                lead: "Dr. Gustavo Reis",
+                country: "Holanda",
+                countryFlag: "🇳🇱",
+                startDate: "2024-01-30",
+                endDate: "2024-07-25",
+                testsCompleted: 21,
+                successRate: 69,
+                materialsCount: 7,
+                researchersCount: 4,
+                initialTasks: [],
+                pendingTasks: [
+                    "Substituir sensores danificados por tempestade solar",
+                    "Recalibrar detectores de partículas",
+                    "Instalar blindagem adicional",
+                    "Testar sensibilidade em diferentes níveis",
+                    "Validar precisão das medições",
+                    "Integrar com sistema de alerta automático",
+                    "Certificar para operação de longo prazo"
+                ]
+            },
+            {
+                id: 15,
+                title: "Equipamentos médicos espaciais",
+                description: "Dispositivos médicos especializados e adaptados para diagnóstico e tratamento de emergências em ambiente espacial.",
+                status: "INTACTO",
+                priority: "ALTA",
+                category: "Medicina",
+                baseProgress: 85,
+                icon: "fas fa-heartbeat",
+                gradient: "gradient-orange",
+                lead: "Dra. Helena Campos",
+                country: "Suíça",
+                countryFlag: "🇨🇭",
+                startDate: "2024-03-12",
+                endDate: "2024-09-20",
+                testsCompleted: 103,
+                successRate: 93,
+                materialsCount: 25,
+                researchersCount: 11,
+                initialTasks: [
+                    "Testar funcionamento em microgravidade",
+                    "Validar precisão diagnóstica",
+                    "Verificar facilidade de uso"
+                ],
+                pendingTasks: [
+                    "Treinar astronautas em procedimentos médicos",
+                    "Realizar simulação de emergência médica",
+                    "Certificar para uso em missões de longa duração"
+                ]
+            },
+            {
+                id: 16,
+                title: "Agricultura hidropônica espacial",
+                description: "Sistema avançado de cultivo sem solo para produção sustentável de alimentos frescos durante missões espaciais.",
+                status: "INTACTO",
+                priority: "MÉDIA",
+                category: "Agricultura",
+                baseProgress: 92,
+                icon: "fas fa-leaf",
+                gradient: "gradient-green",
+                lead: "Dr. Thiago Pereira",
+                country: "Bélgica",
+                countryFlag: "🇧🇪",
+                startDate: "2024-02-18",
+                endDate: "2024-08-10",
+                testsCompleted: 76,
+                successRate: 96,
+                materialsCount: 13,
+                researchersCount: 6,
+                initialTasks: [
+                    "Configurar sistema de nutrientes líquidos",
+                    "Testar crescimento de vegetais em microgravidade",
+                    "Validar iluminação LED otimizada",
+                    "Verificar ciclo completo de produção"
+                ],
+                pendingTasks: [
+                    "Expandir variedade de cultivos",
+                    "Otimizar consumo de recursos"
+                ]
+            },
+            {
+                id: 17,
+                title: "Reciclagem de materiais espaciais",
+                description: "Sistema inovador de reciclagem e reaproveitamento total de materiais para sustentabilidade em missões de longa duração.",
+                status: "DANIFICADO",
+                priority: "BAIXA",
+                category: "Sustentabilidade",
+                baseProgress: 30,
+                icon: "fas fa-sync-alt",
+                gradient: "gradient-teal",
+                lead: "Dra. Fernanda Alves",
+                country: "Dinamarca",
+                countryFlag: "🇩🇰",
+                startDate: "2024-01-25",
+                endDate: "2024-10-05",
+                testsCompleted: 35,
+                successRate: 76,
+                materialsCount: 17,
+                researchersCount: 5,
+                initialTasks: [
+                    "Identificar causa do mau funcionamento"
+                ],
+                pendingTasks: [
+                    "Reparar sistema de separação de materiais",
+                    "Recalibrar processo de derretimento",
+                    "Testar reciclagem de diferentes metais",
+                    "Validar qualidade dos materiais reciclados",
+                    "Otimizar eficiência energética",
+                    "Implementar automação completa"
+                ]
+            },
+            {
+                id: 18,
+                title: "Telescópio espacial de última geração",
+                description: "Observatório espacial com resolução ultra-alta para observação detalhada de exoplanetas e busca por vida extraterrestre.",
+                status: "INTACTO",
+                priority: "CRÍTICA",
+                category: "Astronomia",
+                baseProgress: 96,
+                icon: "fas fa-telescope",
+                gradient: "gradient-blue",
+                lead: "Dr. Rodrigo Tavares",
+                country: "Chile",
+                countryFlag: "🇨🇱",
+                startDate: "2024-01-08",
+                endDate: "2024-05-20",
+                testsCompleted: 142,
+                successRate: 98,
+                materialsCount: 31,
+                researchersCount: 12,
+                initialTasks: [
+                    "Calibrar espelhos de alta precisão",
+                    "Testar sistema de estabilização",
+                    "Validar qualidade de imagem",
+                    "Verificar comunicação com Terra"
+                ],
+                pendingTasks: [
+                    "Realizar primeira observação científica",
+                    "Documentar procedimentos operacionais"
+                ]
+            },
+            {
+                id: 19,
+                title: "Robô explorador lunar",
+                description: "Robô autônomo avançado para escavação, coleta de amostras e análise geológica da superfície lunar.",
+                status: "INTACTO",
+                priority: "ALTA",
+                category: "Exploração",
+                baseProgress: 83,
+                icon: "fas fa-truck-monster",
+                gradient: "gradient-indigo",
+                lead: "Dr. Lucas Barbosa",
+                country: "Israel",
+                countryFlag: "🇮🇱",
+                startDate: "2024-03-08",
+                endDate: "2024-12-01",
+                testsCompleted: 48,
+                successRate: 85,
+                materialsCount: 20,
+                researchersCount: 9,
+                initialTasks: [
+                    "Testar sistema de locomoção em terreno lunar",
+                    "Validar braço escavador",
+                    "Verificar sistema de análise de amostras"
+                ],
+                pendingTasks: [
+                    "Realizar simulação completa de missão",
+                    "Testar comunicação de longa distância",
+                    "Certificar para operação autônoma",
+                    "Finalizar software de navegação"
+                ]
+            },
+            {
+                id: 20,
+                title: "Produção de combustível espacial",
+                description: "Tecnologia revolucionária para produção in-situ de combustível a partir de recursos disponíveis em outros planetas.",
+                status: "DANIFICADO",
+                priority: "MÉDIA",
+                category: "Energia",
+                baseProgress: 18,
+                icon: "fas fa-gas-pump",
+                gradient: "gradient-yellow",
+                lead: "Dra. Carla Ribeiro",
+                country: "Finlândia",
+                countryFlag: "🇫🇮",
+                startDate: "2024-02-12",
+                endDate: "2024-09-15",
+                testsCompleted: 26,
+                successRate: 72,
+                materialsCount: 10,
+                researchersCount: 4,
+                initialTasks: [],
+                pendingTasks: [
+                    "Reparar reator de eletrólise",
+                    "Substituir catalisadores danificados",
+                    "Testar extração de CO2 da atmosfera",
+                    "Validar produção de metano",
+                    "Otimizar pureza do combustível",
+                    "Implementar sistema de armazenamento",
+                    "Certificar segurança operacional"
+                ]
+            },
+            {
+                id: 21,
+                title: "Gerador de gravidade artificial",
+                description: "Sistema inovador de geração de gravidade artificial através de rotação controlada para conforto dos astronautas.",
+                status: "INTACTO",
+                priority: "BAIXA",
+                category: "Sistemas",
+                baseProgress: 91,
+                icon: "fas fa-globe",
+                gradient: "gradient-purple",
+                lead: "Dr. Bruno Machado",
+                country: "Espanha",
+                countryFlag: "🇪🇸",
+                startDate: "2024-03-15",
+                endDate: "2024-11-10",
+                testsCompleted: 39,
+                successRate: 83,
+                materialsCount: 12,
+                researchersCount: 7,
+                initialTasks: [
+                    "Testar estabilidade da rotação",
+                    "Validar conforto para tripulação",
+                    "Verificar eficiência energética",
+                    "Otimizar velocidade de rotação"
+                ],
+                pendingTasks: [
+                    "Realizar teste de longa duração",
+                    "Finalizar certificação de segurança"
+                ]
+            },
+            {
+                id: 22,
+                title: "Centro de controle orbital",
+                description: "Sistema centralizado de controle e monitoramento em tempo real de todas as operações espaciais e missões ativas.",
+                status: "INTACTO",
+                priority: "CRÍTICA",
+                category: "Controle",
+                baseProgress: 88,
+                icon: "fas fa-desktop",
+                gradient: "gradient-cyan",
+                lead: "Dra. Isabela Rocha",
+                country: "Singapura",
+                countryFlag: "🇸🇬",
+                startDate: "2024-01-12",
+                endDate: "2024-06-05",
+                testsCompleted: 198,
+                successRate: 97,
+                materialsCount: 35,
+                researchersCount: 15,
+                initialTasks: [
+                    "Integrar todos os sistemas de monitoramento",
+                    "Testar comunicação com múltiplas missões",
+                    "Validar alertas de emergência"
+                ],
+                pendingTasks: [
+                    "Implementar inteligência artificial de apoio",
+                    "Realizar simulação de crise múltipla",
+                    "Treinar equipe de controle",
+                    "Finalizar procedimentos de segurança"
+                ]
+            },
+            {
+                id: 23,
+                title: "Coleta de energia solar espacial",
+                description: "Sistema avançado de painéis solares com rastreamento automatizado para máxima eficiência energética em órbita.",
+                status: "DANIFICADO",
+                priority: "ALTA",
+                category: "Energia",
+                baseProgress: 20,
+                icon: "fas fa-solar-panel",
+                gradient: "gradient-yellow",
+                lead: "Dra. Sofia Mendes",
+                country: "Noruega",
+                countryFlag: "🇳🇴",
+                startDate: "2024-01-15",
+                endDate: "2024-06-30",
+                testsCompleted: 23,
+                successRate: 78,
+                materialsCount: 9,
+                researchersCount: 5,
+                initialTasks: [],
+                pendingTasks: [
+                    "Substituir painéis danificados por micrometeoritos",
+                    "Reparar sistema de rastreamento solar",
+                    "Recalibrar conversores de energia",
+                    "Testar eficiência em diferentes ângulos",
+                    "Validar armazenamento de energia",
+                    "Implementar sistema de limpeza automática",
+                    "Certificar durabilidade espacial"
+                ]
+            },
+            {
+                id: 24,
+                title: "Mineração de asteroides",
+                description: "Tecnologia automatizada para extração de recursos valiosos de asteroides próximos à Terra para uso espacial e terrestre.",
+                status: "DANIFICADO",
+                priority: "MÉDIA",
+                category: "Mineração",
+                baseProgress: 35,
+                icon: "fas fa-gem",
+                gradient: "gradient-indigo",
+                lead: "Dr. Alex Kumar",
+                country: "Índia",
+                countryFlag: "🇮🇳",
+                startDate: "2024-02-28",
+                endDate: "2024-10-20",
+                testsCompleted: 67,
+                successRate: 82,
+                materialsCount: 18,
+                researchersCount: 8,
+                initialTasks: [
+                    "Analisar composição de asteroides próximos"
+                ],
+                pendingTasks: [
+                    "Reparar sistema de ancoragem no asteroide",
+                    "Substituir brocas de perfuração desgastadas",
+                    "Testar extração de metais preciosos",
+                    "Validar purificação dos materiais",
+                    "Otimizar transporte para órbita terrestre",
+                    "Implementar operação totalmente autônoma"
+                ]
+            }
+        ];
+
+        // Task management storage
+        let projectTaskStates = {};
+
+        // Initialize task states from localStorage or default values
+        function initializeTaskStates() {
+            const saved = localStorage.getItem('projectTaskStates');
+            if (saved) {
+                projectTaskStates = JSON.parse(saved);
+            } else {
+                PROJECTS_DATA.forEach(project => {
+                    projectTaskStates[project.id] = {
+                        completedTasks: [...project.initialTasks],
+                        pendingTasks: [...project.pendingTasks]
+                    };
+                });
+                saveTaskStates();
+            }
+        }
+
+        // Save task states to localStorage
+        function saveTaskStates() {
+            localStorage.setItem('projectTaskStates', JSON.stringify(projectTaskStates));
+        }
+
+        // Calculate dynamic progress based on task completion
+        function calculateProgress(projectId) {
+            const project = PROJECTS_DATA.find(p => p.id === projectId);
+            const taskState = projectTaskStates[projectId];
+            
+            if (!project || !taskState) return project?.baseProgress || 0;
+            
+            const totalTasks = taskState.completedTasks.length + taskState.pendingTasks.length;
+            if (totalTasks === 0) return project.baseProgress;
+            
+            const completedCount = taskState.completedTasks.length;
+            const completionRatio = completedCount / totalTasks;
+            
+            // Calculate progress: base progress + (remaining progress * completion ratio)
+            const remainingProgress = 100 - project.baseProgress;
+            return Math.round(project.baseProgress + (remainingProgress * completionRatio));
+        }
+
+        // Get current status based on progress
+        function getCurrentStatus(projectId) {
+            const progress = calculateProgress(projectId);
+            const project = PROJECTS_DATA.find(p => p.id === projectId);
+            
+            if (progress === 100) return "INTACTO";
+            if (progress <= 60) return "DANIFICADO";
+            return project?.status || "DANIFICADO";
+        }
+
+        // Initialize on page load
+        initializeTaskStates();
+
+        // Main App Component
+        function App() {
+            const [searchTerm, setSearchTerm] = React.useState('');
+            const [statusFilter, setStatusFilter] = React.useState('TODOS');
+            const [categoryFilter, setCategoryFilter] = React.useState('Todas as categorias');
+            const [priorityFilter, setPriorityFilter] = React.useState('Todas');
+            const [countryFilter, setCountryFilter] = React.useState('Todos os países');
+            const [progressFilter, setProgressFilter] = React.useState('Todos');
+            const [sortBy, setSortBy] = React.useState('recent');
+            const [sortOrder, setSortOrder] = React.useState('desc');
+            const [currentPage, setCurrentPage] = React.useState(1);
+            const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+            const [selectedProject, setSelectedProject] = React.useState(null);
+            const [favorites, setFavorites] = React.useState(new Set());
+            const [taskUpdateTrigger, setTaskUpdateTrigger] = React.useState(0);
+
+            const projectsPerPage = 8;
+
+            // Get unique countries for filter
+            const countries = [...new Set(PROJECTS_DATA.map(p => p.country))];
+
+            // Enhanced projects with dynamic progress
+            const enhancedProjects = React.useMemo(() => {
+                return PROJECTS_DATA.map(project => ({
+                    ...project,
+                    progress: calculateProgress(project.id),
+                    status: getCurrentStatus(project.id)
+                }));
+            }, [taskUpdateTrigger]);
+
+            // Filter projects based on search and filters
+            const filteredProjects = React.useMemo(() => {
+                let filtered = enhancedProjects.filter(project => {
+                    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        project.description.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesStatus = statusFilter === 'TODOS' || project.status === statusFilter;
+                    const matchesCategory = categoryFilter === 'Todas as categorias' || project.category === categoryFilter;
+                    const matchesPriority = priorityFilter === 'Todas' || project.priority === priorityFilter;
+                    const matchesCountry = countryFilter === 'Todos os países' || project.country === countryFilter;
+                    
+                    let matchesProgress = true;
+                    if (progressFilter === 'Completo') matchesProgress = project.progress === 100;
+                    else if (progressFilter === 'Parcial') matchesProgress = project.progress >= 61 && project.progress < 100;
+                    else if (progressFilter === 'Baixo') matchesProgress = project.progress <= 60;
+                    
+                    return matchesSearch && matchesStatus && matchesCategory && matchesPriority && matchesCountry && matchesProgress;
+                });
+
+                // Apply sorting
+                filtered.sort((a, b) => {
+                    let comparison = 0;
+                    
+                    switch (sortBy) {
+                        case 'alphabetical':
+                            comparison = a.title.localeCompare(b.title);
+                            break;
+                        case 'priority':
+                            const priorityOrder = { 'CRÍTICA': 4, 'ALTA': 3, 'MÉDIA': 2, 'BAIXA': 1 };
+                            comparison = priorityOrder[b.priority] - priorityOrder[a.priority];
+                            break;
+                        case 'status':
+                            comparison = a.status.localeCompare(b.status);
+                            break;
+                        case 'progress':
+                            comparison = b.progress - a.progress;
+                            break;
+                        case 'country':
+                            comparison = a.country.localeCompare(b.country);
+                            break;
+                        case 'recent':
+                        default:
+                            comparison = new Date(b.startDate) - new Date(a.startDate);
+                            break;
+                    }
+                    
+                    return sortOrder === 'desc' ? comparison : -comparison;
+                });
+
+                return filtered;
+            }, [enhancedProjects, searchTerm, statusFilter, categoryFilter, priorityFilter, countryFilter, progressFilter, sortBy, sortOrder]);
+
+            // Paginate projects
+            const paginatedProjects = React.useMemo(() => {
+                const startIndex = (currentPage - 1) * projectsPerPage;
+                return filteredProjects.slice(startIndex, startIndex + projectsPerPage);
+            }, [filteredProjects, currentPage]);
+
+            const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+
+            // Calculate stats with dynamic progress
+            const stats = React.useMemo(() => {
+                const total = enhancedProjects.length;
+                const intact = enhancedProjects.filter(p => p.status === 'INTACTO').length;
+                const damaged = enhancedProjects.filter(p => p.status === 'DANIFICADO').length;
+                const averageProgress = Math.round(enhancedProjects.reduce((sum, p) => sum + p.progress, 0) / total);
+                const completed = enhancedProjects.filter(p => p.progress === 100).length;
+                
+                return { total, intact, damaged, averageProgress, completed };
+            }, [enhancedProjects]);
+
+            const toggleFavorite = (projectId) => {
+                setFavorites(prev => {
+                    const newFavorites = new Set(prev);
+                    if (newFavorites.has(projectId)) {
+                        newFavorites.delete(projectId);
+                    } else {
+                        newFavorites.add(projectId);
+                    }
+                    return newFavorites;
+                });
+            };
+
+            const getPriorityClass = (priority) => {
+                switch (priority) {
+                    case 'CRÍTICA': return 'priority-critical';
+                    case 'ALTA': return 'priority-alta';
+                    case 'MÉDIA': return 'priority-media';
+                    case 'BAIXA': return 'priority-baixa';
+                    default: return '';
+                }
+            };
+
+            const getProgressClass = (progress) => {
+                if (progress === 100) return 'progress-complete';
+                if (progress >= 61) return 'progress-partial';
+                return 'progress-low';
+            };
+
+            const getProgressBarClass = (progress, status) => {
+                if (progress === 100) return 'progress-intact';
+                if (progress >= 61) return 'progress-partial';
+                return 'progress-damaged';
+            };
+
+            const resetFilters = () => {
+                setSearchTerm('');
+                setStatusFilter('TODOS');
+                setCategoryFilter('Todas as categorias');
+                setPriorityFilter('Todas');
+                setCountryFilter('Todos os países');
+                setProgressFilter('Todos');
+                setSortBy('recent');
+                setSortOrder('desc');
+                setCurrentPage(1);
+            };
+
+            // Categories for filter
+            const categories = [...new Set(PROJECTS_DATA.map(p => p.category))];
+
+            if (selectedProject) {
+                return <ProjectDetail 
+                    project={selectedProject} 
+                    onBack={() => setSelectedProject(null)}
+                    isFavorite={favorites.has(selectedProject.id)}
+                    onToggleFavorite={() => toggleFavorite(selectedProject.id)}
+                    onTaskUpdate={() => setTaskUpdateTrigger(prev => prev + 1)}
+                />;
+            }
+
+            return (
+                <div className="min-h-screen">
+                    {/* Filter Backdrop */}
+                    <div 
+                        className={`filter-backdrop ${isFilterOpen ? 'open' : ''}`}
+                        onClick={() => setIsFilterOpen(false)}
+                    ></div>
+
+                    {/* Enhanced Filter Sidebar */}
+                    <div className={`filter-sidebar ${isFilterOpen ? 'open' : ''}`}>
+                        <div className="filter-content">
+                            <div className="filter-header">
+                                <h3>Filtros Avançados</h3>
+                                <button 
+                                    className="btn"
+                                    onClick={() => setIsFilterOpen(false)}
+                                >
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <div className="filter-section">
+                                <label>Status</label>
+                                <div className="radio-group">
+                                    {['TODOS', 'INTACTO', 'DANIFICADO'].map(status => (
+                                        <div key={status} className="radio-item">
+                                            <input
+                                                type="radio"
+                                                name="status"
+                                                value={status}
+                                                checked={statusFilter === status}
+                                                onChange={(e) => setStatusFilter(e.target.value)}
+                                            />
+                                            <label>{status === 'TODOS' ? 'Todos' : status}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="filter-section">
+                                <label>País</label>
+                                <select 
+                                    className="filter-input"
+                                    value={countryFilter}
+                                    onChange={(e) => setCountryFilter(e.target.value)}
+                                >
+                                    <option value="Todos os países">Todos os países</option>
+                                    {countries.map(country => (
+                                        <option key={country} value={country}>{country}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="filter-section">
+                                <label>Categoria</label>
+                                <select 
+                                    className="filter-input"
+                                    value={categoryFilter}
+                                    onChange={(e) => setCategoryFilter(e.target.value)}
+                                >
+                                    <option value="Todas as categorias">Todas as categorias</option>
+                                    {categories.map(category => (
+                                        <option key={category} value={category}>{category}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="filter-section">
+                                <label>Prioridade</label>
+                                <div className="radio-group">
+                                    {['Todas', 'CRÍTICA', 'ALTA', 'MÉDIA', 'BAIXA'].map(priority => (
+                                        <div key={priority} className="radio-item">
+                                            <input
+                                                type="radio"
+                                                name="priority"
+                                                value={priority}
+                                                checked={priorityFilter === priority}
+                                                onChange={(e) => setPriorityFilter(e.target.value)}
+                                            />
+                                            <label>{priority}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="filter-section">
+                                <label>Progresso</label>
+                                <div className="radio-group">
+                                    {['Todos', 'Completo', 'Parcial', 'Baixo'].map(progress => (
+                                        <div key={progress} className="radio-item">
+                                            <input
+                                                type="radio"
+                                                name="progress"
+                                                value={progress}
+                                                checked={progressFilter === progress}
+                                                onChange={(e) => setProgressFilter(e.target.value)}
+                                            />
+                                            <label>
+                                                {progress === 'Completo' && '100%'}
+                                                {progress === 'Parcial' && '61-99%'}
+                                                {progress === 'Baixo' && '≤60%'}
+                                                {progress === 'Todos' && 'Todos'}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="filter-section">
+                                <label>Ordenar por</label>
+                                <div className="sort-grid">
+                                    {[
+                                        { value: 'recent', label: 'Recente' },
+                                        { value: 'alphabetical', label: 'A-Z' },
+                                        { value: 'priority', label: 'Prioridade' },
+                                        { value: 'progress', label: 'Progresso' },
+                                        { value: 'country', label: 'País' },
+                                        { value: 'status', label: 'Status' }
+                                    ].map(sort => (
+                                        <div
+                                            key={sort.value}
+                                            className={`sort-option ${sortBy === sort.value ? 'active' : ''}`}
+                                            onClick={() => setSortBy(sort.value)}
+                                        >
+                                            {sort.label}
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                <div className="sort-grid" style={{marginTop: '0.75rem'}}>
+                                    <div
+                                        className={`sort-option ${sortOrder === 'desc' ? 'active' : ''}`}
+                                        onClick={() => setSortOrder('desc')}
+                                    >
+                                        <i className="fas fa-arrow-down"></i> Decrescente
+                                    </div>
+                                    <div
+                                        className={`sort-option ${sortOrder === 'asc' ? 'active' : ''}`}
+                                        onClick={() => setSortOrder('asc')}
+                                    >
+                                        <i className="fas fa-arrow-up"></i> Crescente
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="filter-section">
+                                <button className="btn btn-primary w-full mb-2">
+                                    Aplicar Filtros
+                                </button>
+                                <button 
+                                    className="btn w-full"
+                                    onClick={resetFilters}
+                                >
+                                    Limpar Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Header */}
+                    <header className="header">
+                        <div className="header-content">
+                            <a href="#" className="logo">
+                                <div className="logo-icon">
+                                    <i className="fas fa-satellite"></i>
+                                </div>
+                                <div className="logo-text">
+                                    <h1>ISS Research Hub</h1>
+                                    <p>Projetos Científicos Internacionais</p>
+                                </div>
+                            </a>
+
+                            <div className="header-controls">
+                                <div className="search-container">
+                                    <i className="fas fa-search search-icon"></i>
+                                    <input
+                                        type="text"
+                                        className="search-input"
+                                        placeholder="Pesquisar projetos..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                <button 
+                                    className="btn"
+                                    onClick={() => setIsFilterOpen(true)}
+                                >
+                                    <i className="fas fa-filter"></i>
+                                    Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="main-content">
+                        {/* Enhanced Stats Cards with Missing Icon */}
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-content">
+                                    <div className="stat-info">
+                                        <h3>Total de Projetos</h3>
+                                        <p>{stats.total}</p>
+                                    </div>
+                                    <div className="stat-icon" style={{backgroundColor: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6'}}>
+                                        <i className="fas fa-flask"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-content">
+                                    <div className="stat-info">
+                                        <h3>Projetos Concluídos</h3>
+                                        <p style={{color: '#22c55e'}}>{stats.completed}</p>
+                                    </div>
+                                    <div className="stat-icon" style={{backgroundColor: 'rgba(34, 197, 94, 0.2)', color: '#22c55e'}}>
+                                        <i className="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-content">
+                                    <div className="stat-info">
+                                        <h3>Intactos</h3>
+                                        <p style={{color: '#22c55e'}}>{stats.intact}</p>
+                                    </div>
+                                    <div className="stat-icon" style={{backgroundColor: 'rgba(34, 197, 94, 0.2)', color: '#22c55e'}}>
+                                        <i className="fas fa-shield-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-content">
+                                    <div className="stat-info">
+                                        <h3>Danificados</h3>
+                                        <p style={{color: '#ef4444'}}>{stats.damaged}</p>
+                                    </div>
+                                    <div className="stat-icon" style={{backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#ef4444'}}>
+                                        <i className="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Projects Grid */}
+                        <div className="projects-grid">
+                            {paginatedProjects.map(project => (
+                                <div 
+                                    key={project.id} 
+                                    className="project-card"
+                                    onClick={() => setSelectedProject(project)}
+                                >
+                                    <div className={`project-image ${project.gradient}`}>
+                                        <i className={project.icon}></i>
+                                        <div className={`status-badge ${project.status === 'INTACTO' ? 'status-intact' : 'status-damaged'}`}>
+                                            {project.status}
+                                        </div>
+                                        <div className="country-flag">
+                                            <span className="flag">{project.countryFlag}</span>
+                                            <span>{project.country}</span>
+                                        </div>
+                                        <button 
+                                            className="btn"
+                                            style={{
+                                                position: 'absolute',
+                                                top: '0.75rem',
+                                                left: '0.75rem',
+                                                padding: '0.5rem',
+                                                background: 'rgba(0,0,0,0.3)',
+                                                border: 'none'
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleFavorite(project.id);
+                                            }}
+                                        >
+                                            <i className={`fas fa-heart ${favorites.has(project.id) ? '' : 'far fa-heart'}`}
+                                               style={{color: favorites.has(project.id) ? '#ef4444' : 'white'}}></i>
+                                        </button>
+                                    </div>
+                                    <div className="project-info">
+                                        <h3 className="project-title">{project.title}</h3>
+                                        <p className="project-description">{project.description.substring(0, 120)}...</p>
+                                        <div className="project-meta">
+                                            <span>
+                                                Prioridade: <span className={getPriorityClass(project.priority)}>{project.priority}</span>
+                                            </span>
+                                            <div className={`progress-circle ${getProgressClass(project.progress)}`}>
+                                                {project.progress}%
+                                            </div>
+                                        </div>
+                                        <div className="progress-bar">
+                                            <div 
+                                                className={`progress-fill ${getProgressBarClass(project.progress, project.status)}`}
+                                                style={{width: `${project.progress}%`}}
+                                            ></div>
+                                        </div>
+                                        <div className="country-display">
+                                            <span className="flag">{project.countryFlag}</span>
+                                            <span>{project.country} • {project.category}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* No Results */}
+                        {paginatedProjects.length === 0 && (
+                            <div className="text-center" style={{padding: '3rem 0'}}>
+                                <i className="fas fa-search" style={{fontSize: '4rem', color: 'hsl(var(--muted-foreground))', marginBottom: '1rem'}}></i>
+                                <h3 style={{fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem'}}>Nenhum projeto encontrado</h3>
+                                <p style={{color: 'hsl(var(--muted-foreground))'}}>
+                                    Tente ajustar os filtros ou termos de pesquisa
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="pagination">
+                                <button 
+                                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    <i className="fas fa-chevron-left"></i> Anterior
+                                </button>
+                                
+                                {[...Array(totalPages)].map((_, index) => {
+                                    const page = index + 1;
+                                    return (
+                                        <button
+                                            key={page}
+                                            className={currentPage === page ? 'active' : ''}
+                                            onClick={() => setCurrentPage(page)}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                })}
+                                
+                                <button 
+                                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Próximo <i className="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Enhanced Results Info */}
+                        {filteredProjects.length > 0 && (
+                            <div className="text-center" style={{marginTop: '1.5rem', color: 'hsl(var(--muted-foreground))'}}>
+                                Mostrando {((currentPage - 1) * projectsPerPage) + 1} a {Math.min(currentPage * projectsPerPage, filteredProjects.length)} de {filteredProjects.length} projetos
+                                {filteredProjects.length !== PROJECTS_DATA.length && ` (${PROJECTS_DATA.length} total)`}
+                            </div>
+                        )}
+                    </main>
+                </div>
+            );
+        }
+
+        // Enhanced Project Detail Component with Persistent Task Management
+        function ProjectDetail({ project, onBack, isFavorite, onToggleFavorite, onTaskUpdate }) {
+            const [taskState, setTaskState] = React.useState(() => {
+                return projectTaskStates[project.id] || {
+                    completedTasks: [...project.initialTasks],
+                    pendingTasks: [...project.pendingTasks]
+                };
+            });
+            
+            const [isAddingTask, setIsAddingTask] = React.useState(false);
+            const [newTaskText, setNewTaskText] = React.useState('');
+            const [progressAnimation, setProgressAnimation] = React.useState(false);
+
+            // Update project progress when tasks change
+            React.useEffect(() => {
+                projectTaskStates[project.id] = taskState;
+                saveTaskStates();
+                onTaskUpdate();
+            }, [taskState, project.id]);
+
+            const currentProgress = calculateProgress(project.id);
+            const currentStatus = getCurrentStatus(project.id);
+
+            const formatDate = (dateString) => {
+                return new Date(dateString).toLocaleDateString('pt-BR');
+            };
+
+            const getPriorityClass = (priority) => {
+                switch (priority) {
+                    case 'CRÍTICA': return 'priority-critical';
+                    case 'ALTA': return 'priority-alta';
+                    case 'MÉDIA': return 'priority-media';
+                    case 'BAIXA': return 'priority-baixa';
+                    default: return '';
+                }
+            };
+
+            const getProgressClass = (progress) => {
+                if (progress === 100) return 'progress-complete';
+                if (progress >= 61) return 'progress-partial';
+                return 'progress-low';
+            };
+
+            const getProgressBarClass = (progress) => {
+                if (progress === 100) return 'progress-intact';
+                if (progress >= 61) return 'progress-partial';
+                return 'progress-damaged';
+            };
+
+            const handleAddTask = () => {
+                if (newTaskText.trim()) {
+                    setTaskState(prev => ({
+                        ...prev,
+                        pendingTasks: [...prev.pendingTasks, newTaskText.trim()]
+                    }));
+                    setNewTaskText('');
+                    setIsAddingTask(false);
+                }
+            };
+
+            const handleTaskToggle = (taskIndex, isCompleted) => {
+                setProgressAnimation(true);
+                setTimeout(() => setProgressAnimation(false), 500);
+                
+                setTaskState(prev => {
+                    let newState;
+                    if (isCompleted) {
+                        // Move from completed to pending
+                        const task = prev.completedTasks[taskIndex];
+                        newState = {
+                            completedTasks: prev.completedTasks.filter((_, i) => i !== taskIndex),
+                            pendingTasks: [...prev.pendingTasks, task]
+                        };
+                    } else {
+                        // Move from pending to completed
+                        const task = prev.pendingTasks[taskIndex];
+                        newState = {
+                            completedTasks: [...prev.completedTasks, task],
+                            pendingTasks: prev.pendingTasks.filter((_, i) => i !== taskIndex)
+                        };
+                    }
+                    return newState;
+                });
+            };
+
+            const cancelAddTask = () => {
+                setIsAddingTask(false);
+                setNewTaskText('');
+            };
+
+            return (
+                <div className="min-h-screen">
+                    <div className="main-content">
+                        <button onClick={onBack} className="btn mb-4">
+                            <i className="fas fa-arrow-left"></i> Voltar para projetos
+                        </button>
+
+                        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem'}}>
+                            {/* Project Description (Left) */}
+                            <div>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <h1 style={{fontSize: '2rem', fontWeight: '700'}}>{project.title}</h1>
+                                    <div className={`status-badge ${currentStatus === 'INTACTO' ? 'status-intact' : 'status-damaged'}`}>
+                                        {currentStatus}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 mb-4 text-sm" style={{color: 'hsl(var(--muted-foreground))', flexWrap: 'wrap'}}>
+                                    <span className="flex items-center gap-2">
+                                        <span style={{fontSize: '1.25rem'}}>{project.countryFlag}</span>
+                                        {project.country}
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <i className="fas fa-calendar"></i>
+                                        Iniciado em: {formatDate(project.startDate)}
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <i className="fas fa-user"></i>
+                                        {project.lead}
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <i className="fas fa-flag"></i>
+                                        Prioridade: <span className={getPriorityClass(project.priority)}>{project.priority}</span>
+                                    </span>
+                                </div>
+
+                                <div className="glass" style={{padding: '1.5rem', marginBottom: '1.5rem'}}>
+                                    <h3 className="font-semibold mb-4">Descrição</h3>
+                                    <p style={{color: 'hsl(var(--muted-foreground))', lineHeight: '1.6', marginBottom: '1rem'}}>
+                                        {project.description}
+                                    </p>
+                                    <div className="country-flag-large">
+                                        {project.countryFlag}
+                                    </div>
+                                </div>
+
+                                <div className="glass" style={{padding: '1.5rem'}}>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-semibold">Progresso Geral</h3>
+                                        <div className={`progress-circle ${getProgressClass(currentProgress)} ${progressAnimation ? 'progress-updating' : ''}`} style={{width: '60px', height: '60px', fontSize: '1rem'}}>
+                                            {currentProgress}%
+                                        </div>
+                                    </div>
+                                    <div className="progress-bar" style={{height: '12px'}}>
+                                        <div 
+                                            className={`progress-fill ${getProgressBarClass(currentProgress)}`}
+                                            style={{width: `${currentProgress}%`}}
+                                        ></div>
+                                    </div>
+                                    <div className="flex justify-between text-sm mt-2" style={{color: 'hsl(var(--muted-foreground))'}}>
+                                        <span>Categoria: {project.category}</span>
+                                        {project.endDate && (
+                                            <span>Previsão: {formatDate(project.endDate)}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Project Image and Stats (Right) */}
+                            <div>
+                                {/* Main Project Image */}
+                                <div className="glass mb-4">
+                                    <div className={`project-image ${project.gradient}`} style={{height: '320px', borderRadius: '12px 12px 0 0', position: 'relative'}}>
+                                        <div className="text-center">
+                                            <i className={project.icon} style={{fontSize: '5rem', marginBottom: '1rem'}}></i>
+                                            <p style={{fontSize: '1.125rem', fontWeight: '500', marginBottom: '0.5rem'}}>{project.title}</p>
+                                            <p style={{color: 'rgba(255,255,255,0.8)'}}>Projeto de pesquisa espacial</p>
+                                        </div>
+                                        <div className="country-flag" style={{top: '1rem', left: '1rem', right: 'auto'}}>
+                                            <span className="flag">{project.countryFlag}</span>
+                                            <span>{project.country}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Project Stats */}
+                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem'}}>
+                                    <div className="glass text-center" style={{padding: '1rem'}}>
+                                        <div style={{fontSize: '1.5rem', fontWeight: '700', color: 'hsl(var(--primary))'}}>{project.testsCompleted}</div>
+                                        <div className="text-sm" style={{color: 'hsl(var(--muted-foreground))'}}>Testes Realizados</div>
+                                    </div>
+                                    <div className="glass text-center" style={{padding: '1rem'}}>
+                                        <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#22c55e'}}>{project.successRate}%</div>
+                                        <div className="text-sm" style={{color: 'hsl(var(--muted-foreground))'}}>Taxa de Sucesso</div>
+                                    </div>
+                                    <div className="glass text-center" style={{padding: '1rem'}}>
+                                        <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#eab308'}}>{project.materialsCount}</div>
+                                        <div className="text-sm" style={{color: 'hsl(var(--muted-foreground))'}}>Materiais Testados</div>
+                                    </div>
+                                    <div className="glass text-center" style={{padding: '1rem'}}>
+                                        <div style={{fontSize: '1.5rem', fontWeight: '700', color: '#a855f7'}}>{project.researchersCount}</div>
+                                        <div className="text-sm" style={{color: 'hsl(var(--muted-foreground))'}}>Pesquisadores</div>
+                                    </div>
+                                </div>
+
+                                {/* Quick Actions */}
+                                <div style={{display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+                                    <button
+                                        onClick={onToggleFavorite}
+                                        className={`btn ${isFavorite ? 'btn-primary' : ''} w-full`}
+                                    >
+                                        <i className={`fas fa-heart${isFavorite ? '' : ' far fa-heart'}`}></i>
+                                        {isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
+                                    </button>
+                                    <button className="btn w-full">
+                                        <i className="fas fa-download"></i>
+                                        Baixar Relatório
+                                    </button>
+                                    <button className="btn w-full">
+                                        <i className="fas fa-share"></i>
+                                        Compartilhar Projeto
+                                    </button>
+                                    <button className="btn w-full">
+                                        <i className="fas fa-chart-line"></i>
+                                        Ver Analytics
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Enhanced Task Management Section with Persistent State */}
+                        <div className="glass" style={{padding: '2rem'}}>
+                            <h2 className="text-xl font-semibold mb-6">Passos para execução no espaço</h2>
+                            
+                            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem'}}>
+                                {/* Completed Tasks */}
+                                <div>
+                                    <h3 className="font-medium mb-4 flex items-center" style={{color: '#22c55e'}}>
+                                        <i className="fas fa-check-circle" style={{marginRight: '0.5rem'}}></i>
+                                        Tarefas Concluídas ({taskState.completedTasks.length})
+                                    </h3>
+                                    <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+                                        {taskState.completedTasks.map((task, index) => (
+                                            <div key={`completed-${index}`} className="task-item">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={true} 
+                                                    onChange={() => handleTaskToggle(index, true)}
+                                                    className="task-checkbox" 
+                                                />
+                                                <span className="task-content task-completed">{task}</span>
+                                            </div>
+                                        ))}
+                                        {taskState.completedTasks.length === 0 && (
+                                            <p style={{color: 'hsl(var(--muted-foreground))', textAlign: 'center', padding: '1rem'}}>
+                                                Nenhuma tarefa concluída ainda
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Pending Tasks */}
+                                <div>
+                                    <h3 className="font-medium mb-4 flex items-center" style={{color: currentProgress === 100 ? '#22c55e' : '#eab308'}}>
+                                        <i className={`fas ${currentProgress === 100 ? 'fa-check-circle' : 'fa-clock'}`} style={{marginRight: '0.5rem'}}></i>
+                                        Tarefas Pendentes ({taskState.pendingTasks.length})
+                                    </h3>
+                                    <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+                                        {taskState.pendingTasks.map((task, index) => (
+                                            <div key={`pending-${index}`} className="task-item">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={false}
+                                                    onChange={() => handleTaskToggle(index, false)}
+                                                    className="task-checkbox" 
+                                                />
+                                                <span className="task-content">{task}</span>
+                                            </div>
+                                        ))}
+                                        
+                                        {taskState.pendingTasks.length === 0 && currentProgress === 100 && (
+                                            <div className="text-center" style={{padding: '2rem', color: 'hsl(var(--muted-foreground))'}}>
+                                                <i className="fas fa-trophy" style={{fontSize: '2rem', color: '#22c55e', marginBottom: '1rem'}}></i>
+                                                <p>Todas as tarefas foram concluídas! 🎉</p>
+                                                <p style={{fontSize: '0.875rem', marginTop: '0.5rem'}}>Projeto finalizado com sucesso.</p>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Add Task Form */}
+                                        {isAddingTask ? (
+                                            <div className="task-form">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Digite a nova tarefa..."
+                                                    value={newTaskText}
+                                                    onChange={(e) => setNewTaskText(e.target.value)}
+                                                    className="task-input"
+                                                    autoFocus
+                                                />
+                                                <div className="task-form-buttons">
+                                                    <button
+                                                        onClick={handleAddTask}
+                                                        className="btn btn-success btn-sm"
+                                                        disabled={!newTaskText.trim()}
+                                                    >
+                                                        <i className="fas fa-check"></i> Adicionar
+                                                    </button>
+                                                    <button
+                                                        onClick={cancelAddTask}
+                                                        className="btn btn-cancel btn-sm"
+                                                    >
+                                                        <i className="fas fa-times"></i> Cancelar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="add-task-btn" onClick={() => setIsAddingTask(true)}>
+                                                <i className="fas fa-plus"></i>
+                                                Adicionar novo item
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
